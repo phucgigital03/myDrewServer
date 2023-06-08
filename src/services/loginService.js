@@ -1,8 +1,10 @@
-const Users = require('../models/Users')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const dotenv = require('dotenv')
 dotenv.config()
+
+const Users = require('../models/Users')
+const mongooseToObj = require('../utils/mongooseToObj')
 
 class loginService {
     // [get] /
@@ -44,10 +46,9 @@ class loginService {
                 })
             foundUser.refreshToken = refreshToken;
             const result = await foundUser.save();
-            const objNew = result.toObject();
             return {
                 accessToken,
-                ...objNew
+                ...mongooseToObj.oneObj(result)
             }
         }catch(err){
             console.log(err)
