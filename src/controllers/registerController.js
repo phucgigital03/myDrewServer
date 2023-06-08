@@ -1,13 +1,13 @@
-const userService = require('../services/userService');
-const userVallidation = require('../validations/userValidation')
+const registerService = require('../services/registerService');
+const registerValidation = require('../validations/registerValidation')
 
 class registerController {
     // [post] /
     async register(req,res,next){
         try{
             const formUser = req.body;
-            const formValidated = await userVallidation.handleRegisterForm(formUser);
-            const infoUser = await userService.registerUser(formValidated);
+            const formValidated = await registerValidation.handleRegisterForm(formUser);
+            const infoUser = await registerService.registerUser(formValidated);
             if(infoUser.errorCode === 409){
                 return res.status(409).json({
                     statusCode: 409,

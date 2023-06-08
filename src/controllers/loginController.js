@@ -1,12 +1,12 @@
-const userService = require('../services/userService');
-const userVallidation = require('../validations/userValidation')
+const loginService = require('../services/loginService');
+const loginValidation = require('../validations/loginValidation')
 
 class loginController {
     // [get] /
     async login(req,res,next){
         try{
-            const formValidated = await userVallidation.handleLoginForm(req.body);
-            const infoUser = await userService.loginUser(formValidated)
+            const formValidated = await loginValidation.handleLoginForm(req.body);
+            const infoUser = await loginService.loginUser(formValidated)
             if(infoUser.errorCode === 401){
                 return res.status(401).json({
                     statusCode: 401,
