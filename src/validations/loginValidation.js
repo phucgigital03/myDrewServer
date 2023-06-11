@@ -7,6 +7,7 @@ class loginVallidation {
                 .required(),
             email: Joi.string()
                 .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+                .required()
         })
         const result = await schemaUser.validateAsync(formUser,{ abortEarly: false });
         return result

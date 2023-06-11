@@ -8,15 +8,16 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
 const path = require('path');
 
-const corsOptions = require('./configs/allowCors');
+const corsOptions = require('./configs/corsOption');
 const routes = require('./routes/index.js');
 const connectMongoDb = require('./configs/connectMongoDB');
-
-// cors
-app.use(cors(corsOptions));
+const credentials = require('./middlewares/credentials')
 
 // static file
 app.use(express.static(path.join('./src','public')));
+// cors
+app.use(credentials)
+app.use(cors(corsOptions));
 
 // config parse
 app.use(bodyParser.json());

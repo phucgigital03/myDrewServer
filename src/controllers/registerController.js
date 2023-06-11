@@ -8,10 +8,10 @@ class registerController {
             const formUser = req.body;
             const formValidated = await registerValidation.handleRegisterForm(formUser);
             const infoUser = await registerService.registerUser(formValidated);
-            if(infoUser.errorCode === 409){
+            if(infoUser.statusCode === 409){
                 return res.status(409).json({
                     statusCode: 409,
-                    errorMessage: 'conflict'
+                    errorMessage: 'user ton tai'
                 })
             }else if(infoUser){
                 return res.status(200).json({
