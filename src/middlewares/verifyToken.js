@@ -8,6 +8,7 @@ const verifyToken = (req,res,next)=>{
         return res.status(409).json({
             statusCode: 409,
             errorMessage: 'unauthorization',
+            _bearer: false,
         })
     }
     const token = authHeader.split(' ')[1];

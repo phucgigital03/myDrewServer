@@ -20,6 +20,7 @@ class loginController {
             }else if(infoUser){
                 res.cookie('jwt',infoUser.refreshToken,{ httpOnly: true , secure: true , sameSite: 'None', maxAge: 24 * 60 * 60 * 1000})
                 delete infoUser.refreshToken
+                delete infoUser.password
                 return res.status(200).json({
                     statusCode: 200,
                     data: infoUser

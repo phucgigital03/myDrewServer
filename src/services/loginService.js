@@ -25,24 +25,26 @@ class loginService {
             const accessToken = jwt.sign(
                 {
                     userInfo: {
+                        id: foundUser._id,
                         email: foundUser.email,
                         roles: foundUser.roles
                     }
                 },
                 process.env.ACCESS_TOKEN,
                 {
-                    expiresIn: '60s'
+                    expiresIn: '20s'
                 })
             const refreshToken = jwt.sign(
                 {
                     userInfo: {
+                        id: foundUser._id,
                         email: foundUser.email,
                         roles: foundUser.roles
                     }
                 },
                 process.env.REFRESH_TOKEN,
                 {
-                    expiresIn: '1d'
+                    expiresIn: '60s'
                 })
             foundUser.refreshToken = refreshToken;
             const result = await foundUser.save();

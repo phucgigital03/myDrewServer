@@ -13,7 +13,11 @@ const User = new mongoose.Schema({
         employment: Number,
         addmin: Number,
     },
-    refreshToken: {type: String},
+    refreshToken: { type: String },
+    orderHistorys: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'OrderHistorys'
+    }]
 });
 
 const Users = mongoose.model('Users', User);

@@ -32,13 +32,14 @@ class refreshTokenController {
             }
             const accessToken = jwt.sign({
                 userInfo: {
+                    id: foundUser._id,
                     email: foundUser.email,
                     roles: foundUser.roles
                 }
             },
                 process.env.ACCESS_TOKEN,
             {
-                expiresIn: '60s'
+                expiresIn: '20s'
             })
             return res.status(200).json({
                 statusCode: 200,
