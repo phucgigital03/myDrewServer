@@ -15,6 +15,7 @@ const credentials = require('./middlewares/credentials')
 
 // static file
 app.use(express.static(path.join('./src','public')));
+app.use(express.static(path.join('./src','public','uploads')));
 // cors
 app.use(credentials)
 app.use(cors(corsOptions));

@@ -1,6 +1,6 @@
 const multer = require('multer')
 const upload = require('../configs/multerFile')
-const uploadFn = upload.array('listImg',1)
+const uploadFn = upload.array('listImg',2)
 
 const uploadArrayFile = (req,res,next)=>{
     uploadFn(req,res,function(error){

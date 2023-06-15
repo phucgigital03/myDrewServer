@@ -27,8 +27,8 @@ const upload = multer({
     limits: {
         fields: 6,
         fieldNameSize: 100, 
-        fieldSize: 70000,
-        fileSize: 70000,
+        fieldSize: 60000,
+        fileSize: 100000,
     },
     fileFilter: function(_req, file, cb){
         checkFileType(file, cb);
