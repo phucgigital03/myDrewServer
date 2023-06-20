@@ -2,14 +2,10 @@ const mongoose = require('mongoose');
 const mongoose_delete = require('mongoose-delete');
 
 const Product = new mongoose.Schema({ 
-    title: {type: String, required: true},
-    description: {type: String, required: true},
-    listImg: [{type: String,required: true}],
-    price: {type: Number,required: true},
-    discount: {type: Number,required: true, default: 0},
-    size: [{type: String,required: true,}],
-    color: [{type: String,required: true,}],
-    productRef: [{type: mongoose.Schema.Types.ObjectId,ref: 'Products'}]
+    idInventory: {type: mongoose.Schema.Types.ObjectId, required: true},
+    spec: [{type: Object}],
+    comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comments'}],
+    productRef: [{type: mongoose.Schema.Types.ObjectId,ref: 'Products'}],
 },{
     timestamps: true,
 });
