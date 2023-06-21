@@ -1,6 +1,7 @@
 const { unlink } = require('fs/promises')
 const path = require('path')
 const Inventories = require('../../models/Inventories')
+const Products = require('../../models/Products')
 
 class inventoryService {
     async createInventory(files,formInventory){
@@ -18,6 +19,7 @@ class inventoryService {
                 listImg,
             }
             const inventorySave = new Inventories(newForm)
+            await Products.create({idInventory: inventorySave._id})
             await inventorySave.save();
             return {
                 statusCode: 200,

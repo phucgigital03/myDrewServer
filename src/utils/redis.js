@@ -1,136 +1,119 @@
-const { renderRedis } = require('../config/redis/connectRedis')
+const { client,clientSubscribe } = require('../configs/connectRedis')
 
-const incr = (key)=>{
-    return new Promise(async(resolve,reject)=>{
+class FeatureRedis{
+    async disConnectRedis(){
         try{
-            const result = await renderRedis.incr(key)
-            resolve(result)
+            await client.disconnect();
+            return {
+                statusCode: 200,
+                message: 'disconnect success'
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'disconnect error'
+            }
         }
-    })
-}
-
-const expire = (key,valueTime)=>{
-    return new Promise(async(resolve,reject)=>{
+    }
+    async setRedis(key,value){
         try{
-            const result = await renderRedis.expire(key,valueTime)
-            resolve(result)
+            const result = await client.set(key,value);
+            return {
+                statusCode: 200,
+                data: result
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
         }
-    })
-}
-
-const getTtl = (key)=>{
-    return new Promise(async(resolve,reject)=>{
+    }
+    async getRedis(key){
         try{
-            const result = await renderRedis.ttl(key)
-            resolve(result)
+            const result = await client.get(key);
+            return {
+                statusCode: 200,
+                data: result
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
         }
-    })
-}
-
-const incrby = (key,numberIncr)=>{
-    return new Promise(async(resolve,reject)=>{
+    }
+    async incrBy(key,value){
         try{
-            const result = await renderRedis.incrby(key,numberIncr)
-            resolve(result)
+            const result = await client.incrBy(key,value);
+            return {
+                statusCode: 200,
+                data: result
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
         }
-    })
-}
-
-const decrby = (key,numberIncr)=>{
-    return new Promise(async(resolve,reject)=>{
+    }
+    async delRedis(key){
         try{
-            const result = await renderRedis.decrby(key,numberIncr)
-            resolve(result)
+            const result = await client.del(key);
+            return {
+                statusCode: 200,
+                data: result
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
         }
-    })
-}
-
-const set = (key,valueSet)=>{
-    return new Promise(async(resolve,reject)=>{
+    }
+    async setNxRedis(key,value){
         try{
-            const result = await renderRedis.set(key,valueSet)
-            resolve(result)
+            const result = await client.setnx(key,value);
+            return {
+                statusCode: 200,
+                data: result
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
         }
-    })
-}
-
-const setnx = (key,valueSet)=>{
-    return new Promise(async(resolve,reject)=>{
+    }
+    async setNxExRedis(key,value,expired){
         try{
-            const result = await renderRedis.setnx(key,valueSet)
-            resolve(result)
+            const result = await client.setnx(key,value);
+            await client.expire(key,expired)
+            return {
+                statusCode: 200,
+                data: result
+            }
         }catch(err){
-            reject(err)
+            console.log(err)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
         }
-    })
+    }
+    psubscribeNotifyRedis(){
+        clientSubscribe.psubscribe('__keyevent@0__:expired',()=>{
+            clientSubscribe.on('pmessage',(pattern,channel,message)=>{
+                console.log(message)
+            })
+        });
+    }
 }
 
-const get = (key)=>{
-    return new Promise(async(resolve,reject)=>{
-        try{
-            const result = await renderRedis.get(key)
-            resolve(result)
-        }catch(err){
-            reject(err)
-        }
-    })
-}
-
-const dele = (key)=>{
-    return new Promise(async(resolve,reject)=>{
-        try{
-            const result = await renderRedis.del(key)
-            resolve(result)
-        }catch(err){
-            reject(err)
-        }
-    })
-}
-
-const allKey = ()=>{
-    return new Promise(async(resolve,reject)=>{
-        try{
-            const result = await renderRedis.keys('*')
-            resolve(result)
-        }catch(err){
-            reject(err)
-        }
-    })
-}
-
-const exist = (key)=>{
-    return new Promise(async(resolve,reject)=>{
-        try{
-            const result = await renderRedis.exists(key)
-            resolve(result)
-        }catch(err){
-            reject(err)
-        }
-    })
-}
-
-module.exports = {
-    incr,
-    expire,
-    getTtl,
-    incrby,
-    set,
-    setnx,
-    get,
-    dele,
-    exist,
-    decrby,
-    allKey
-}
+module.exports = new FeatureRedis();

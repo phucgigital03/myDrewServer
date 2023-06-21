@@ -2,22 +2,6 @@ const mongoose = require('mongoose')
 const Products = require('../../models/Products')
 
 class productService {
-    async createDB(dataCreate){
-        try{
-            const { idInventory } = dataCreate
-            const result = await Products.create({idInventory})
-            return {
-                statusCode: 200,
-                product: result
-            }
-        }catch(error){
-            console.log(error)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
-    }
     async getDB(){
         try{
             const result = await Products.aggregate([
