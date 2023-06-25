@@ -7,5 +7,8 @@ const verifyRoles = require('../../middlewares/verifyRoles');
 const roles = require('../../configs/allowRoles');
 
 cartRouters.post('/cart',cartController.create)
+cartRouters.patch('/cart/plus',cartController.updateProductPlus)
+cartRouters.patch('/cart/minus',cartController.updateProductMinus)
+cartRouters.delete('/cart',cartController.deleProductCart)
 
 module.exports = cartRouters

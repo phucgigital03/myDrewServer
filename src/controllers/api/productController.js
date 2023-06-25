@@ -14,16 +14,20 @@ class ProductController {
         }
     }
     async getOne(req,res,next){
-        const {id} = req.params;
-        if(!id){
+        const { title } = req.params;
+        if(!title){
             return res.status(400).json({
                 statusCode: 400,
                 errorMessage: 'bad required'
             })
         }
-        const result = await productService.getOneDB(id);
+        const result = await productService.getOneDB(title);
         if(result.statusCode === 200){
             return  res.status(200).json({
+                ...result
+            })
+        }else if(result.statusCode === 400){
+            return  res.status(400).json({
                 ...result
             })
         }else if(result.statusCode === 500){

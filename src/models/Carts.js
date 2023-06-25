@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const mongoose_delete = require('mongoose-delete');
 
 const Cart = new mongoose.Schema({ 
-    _id: {type: mongoose.Schema.Types.ObjectId, required: true},
     userId: {type: mongoose.Schema.Types.ObjectId},
     modifiedOn: {type: Date, default: Date.now},
     status: {type: String, default: 'active'},

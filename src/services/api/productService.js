@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Products = require('../../models/Products')
+const Inventories = require('../../models/Inventories')
 
 class productService {
     async getDB(){
@@ -23,11 +24,25 @@ class productService {
                         fromInventories: 0,
                         reservations: 0
                     } 
+                },
+                {
+                    $group: {
+                        _id: '$title',
+                        data: {'$first': '$$ROOT'}
+                    }
+                },
+                {   
+                    $project: {
+                        data: 1, 
+                        _id: 0
+                    }
                 }
             ])
+            const products = result.map((product) => product.data).filter((product)=> !product.deleted)
             return {
                 statusCode: 200,
-                products: result.filter((product)=> !product.deleted)
+                lengthItems: products.length,
+                products: products,
             }
         }catch(error){
             console.log(error)
@@ -37,33 +52,51 @@ class productService {
             }
         }
     }
-    async getOneDB(id){
+    async getOneDB(title){
         try{
-            const result = await Products.aggregate([
+            
+            const results = await Inventories.aggregate([
                 {
-                    $match: { _id: new mongoose.Types.ObjectId(id) }
+                    $match: { title: title }
+                },
+                { 
+                    $project: {   
+                        _id: 1,
+                    } 
+                }
+            ])
+            if(!results.length){
+                return {
+                    statusCode: 400,
+                    errorMessage: 'bad required'
+                }
+            }
+            const ids = results.map(objId => objId._id)
+            const products = await Products.aggregate([
+                {
+                    $match: { idInventory: {$in: ids} }
                 },
                 {
                    $lookup: {
                       from: "inventories",
                       localField: "idInventory",    
                       foreignField: "_id",
-                      as: "inventories"
+                      as: "inventory"
                    }
                 },
                 {
-                   $replaceRoot: { newRoot: { $mergeObjects: [ "$$ROOT",{ $arrayElemAt: [ "$inventories", 0 ] } ] } }
+                   $replaceRoot: { newRoot: { $mergeObjects: [ "$$ROOT",{ $arrayElemAt: [ "$inventory", 0 ] } ] } }
                 },
                 { 
                     $project: {   
-                        inventories: 0,
+                        inventory: 0,
                         reservations: 0
                     } 
                 }
             ])
             return {
                 statusCode: 200,
-                product: result.filter((product)=> !product.deleted)
+                products: products.filter((product)=> !product.deleted)
             }
         }catch(error){
             console.log(error)

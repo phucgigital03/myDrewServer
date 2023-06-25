@@ -14,12 +14,12 @@ class inventoryService {
                 category,
                 quatity: Number(quatity),
                 price: Number(price),
-                color: color.split(','),
-                size: size.split(','),
+                color,
+                size,
                 listImg,
             }
             const inventorySave = new Inventories(newForm)
-            await Products.create({idInventory: inventorySave._id})
+            await Products.create({titleInventory: inventorySave._title})
             await inventorySave.save();
             return {
                 statusCode: 200,
@@ -83,7 +83,7 @@ class inventoryService {
             }
         }
     }
-    async updateInventory(id,files = [],formInventory){
+    async updateInventory(title,files = [],formInventory){
         try{
             const { price,size,color,title,description,category,quatity } = formInventory
             const newForm = {
@@ -92,8 +92,8 @@ class inventoryService {
                 category,
                 quatity: Number(quatity),
                 price: Number(price),
-                color: color ? color.split(',') : [],
-                size: size ? size.split(',') : [],
+                color,
+                size,
             }
             // muted let update listImg Db
             if(files.length){
@@ -101,10 +101,10 @@ class inventoryService {
                 newForm.listImg = listImg
             }
             // update and find 
-            const inventoryOld = await Inventories.findOneAndUpdate({_id: id},{
+            const inventoryOld = await Inventories.findOneAndUpdate({_title: title},{
                 $set: newForm
             })
-            const inventoryNew = await Inventories.find({_id: id})
+            const inventoryNew = await Inventories.find({_title: title})
             // check let delete listImg server
             if(files.length){
                 const listImgOld = inventoryOld.listImg;
@@ -141,9 +141,9 @@ class inventoryService {
             }
         }
     }
-    async deleteSortInventory(id){
+    async deleteSortInventory(title){
         try{
-            const inventoryeDeleted = await Inventories.delete({_id: id}).exec()
+            const inventoryeDeleted = await Inventories.delete({title: title}).exec()
             if(inventoryeDeleted.modifiedCount){
                 return {
                     statusCode: 200,
@@ -152,7 +152,7 @@ class inventoryService {
             }
             return {
                 statusCode: 400,
-                errorMessage: 'bad required: id invalid'
+                errorMessage: 'bad required: title invaltitle'
             }
         }catch(err){
             console.log(err)
