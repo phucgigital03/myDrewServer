@@ -1,4 +1,5 @@
 const Orders = require('../../models/Orders')
+const Carts = require('../../models/Carts')
 
 class OrderService {
     async createOrderDB(data,customer){
@@ -21,6 +22,31 @@ class OrderService {
         })
         const orderSaved = await newOrder.save();
         return orderSaved
+    }
+    async getOrderDB(customerID){
+        try{
+            const orderFound = await Orders.findOne({customerId: customerID})
+            return {
+                statusCode: 200,
+                orderFound: orderFound
+            }
+        }catch(error){
+            console.log(error)
+            return {
+                statusCode: 500,
+                errorMessage: 'error server'
+            }
+        }
+    }
+    async clearProduct(cartId){
+        const cartUpdated = await Carts.updateOne({
+            _id: cartId
+        },{
+            $set: {
+                products: []
+            }
+        })
+        return cartUpdated
     }
 }
 

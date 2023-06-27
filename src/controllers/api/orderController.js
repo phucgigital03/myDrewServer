@@ -15,8 +15,7 @@ class OrderController {
                 console.log(`webhook verified.`)
             } catch (error) {
                 console.log(`webhook error: ${error.message}`)
-                res.status(400).send(`Webhook Error: ${error.message}`);
-                return;
+                return res.status(400).send(`Webhook Error: ${error.message}`);
             }
             data = event.data.object;
             eventType = event.type;
@@ -33,15 +32,37 @@ class OrderController {
                     data.customer
                 );
                 const orderSaved = await orderService.createOrderDB(data,customer);
-                console.log(orderSaved)
+                const cardSaved = await orderService.clearProduct(customer?.metadata?.cartId)
+                if(cardSaved.modifiedCount){
+                    console.log(orderSaved,orderSaved)
+                    // Return a 200 res to acknowledge receipt of the event
+                    return res.status(200).end();
+                }
+                return res.status(400).send(`bad required`);
             }catch(error){
                 console.log(error)
-                res.status(500).send(`Server Error: ${error.message}`);
+                return res.status(500).send(`Server Error: ${error.message}`);
             }   
         }
-
-        // Return a 200 res to acknowledge receipt of the event
-        res.status(200).end();
+    }
+    async getOrder(req,res){
+        const { customerID } = req.params
+        if(!customerID){
+            return res.status(400).json({
+                statusCode: 400,
+                errorMessage: 'bad required: no ID customer'
+            })
+        }
+        const resultApi = await orderService.getOrderDB(customerID);
+        if(resultApi.statusCode === 200){
+            return res.status(200).json({
+               ...resultApi
+            })
+        }else if(resultApi.statusCode === 500){
+            return res.status(500).json({
+                ...resultApi
+            })
+        }
     }
 }
 

@@ -50,11 +50,12 @@ class stripeController {
                     )
                 })
                 const productIds = products.map((product)=>{
-                    return new mongoose.Types.ObjectId(product._id);
+                    return product._id;
                 })
                 const customer = await stripe.customers.create({
                     metadata: {
                         userId: userId,
+                        cartId: cartId,
                         productIds: JSON.stringify(productIds),
                         shipping: JSON.stringify({
                             province: province,
@@ -73,8 +74,8 @@ class stripeController {
                     payment_method_types: ["card"],
                     line_items: line_items,
                     customer: customer.id,
-                    success_url: `http://localhost:3000/stripe/success/${customer.id}`,
-                    cancel_url: 'http://localhost:3000/stripe/cancel',
+                    success_url: `http://localhost:3000/payment/success/${customer.id}`,
+                    cancel_url: 'http://localhost:3000/payment/cancel',
                 });
                 return res.status(200).json({
                     statusCode: 200,

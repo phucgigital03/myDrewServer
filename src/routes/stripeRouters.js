@@ -3,6 +3,6 @@ const stripeRouters = express.Router();
 
 const stripeController = require('../controllers/stripeController');
 
-stripeRouters.get('/create-checkout-session',stripeController.getUrl)
+stripeRouters.post('/create-checkout-session',stripeController.getUrl)
 
 module.exports = stripeRouters
