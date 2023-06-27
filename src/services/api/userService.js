@@ -1,4 +1,3 @@
-const OrderHistorys = require('../../models/OrderHistorys')
 const Users = require('../../models/Users')
 
 class UserService {

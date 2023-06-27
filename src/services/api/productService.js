@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Products = require('../../models/Products')
 const Inventories = require('../../models/Inventories')
 
-class productService {
+class ProductService {
     async getDB(){
         try{
             const result = await Products.aggregate([
@@ -108,4 +108,4 @@ class productService {
     }
 }
 
-module.exports = new productService();
+module.exports = new ProductService();

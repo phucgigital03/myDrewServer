@@ -3,7 +3,7 @@ const path = require('path')
 const Inventories = require('../../models/Inventories')
 const Products = require('../../models/Products')
 
-class inventoryService {
+class InventoryService {
     async createInventory(files,formInventory){
         try{
             const listImg = files.map((file) => file.filename)
@@ -164,4 +164,4 @@ class inventoryService {
     }
 }
 
-module.exports = new inventoryService();
+module.exports = new InventoryService();
