@@ -34,7 +34,7 @@ class OrderController {
                 const orderSaved = await orderService.createOrderDB(data,customer);
                 const cardSaved = await orderService.clearProduct(customer?.metadata?.cartId)
                 if(cardSaved.modifiedCount){
-                    console.log(orderSaved,orderSaved)
+                    console.log(orderSaved,cardSaved)
                     // Return a 200 res to acknowledge receipt of the event
                     return res.status(200).end();
                 }
