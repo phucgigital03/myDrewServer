@@ -1,48 +1,9 @@
 const mongoose = require('mongoose')
 const Carts = require('../../models/Carts')
 const Inventories = require('../../models/Inventories')
-const Products = require('../../models/Products')
+const { handleGetProducts } = require('../../utils/getProducts');
 
 class CartService {
-    // at createCartDB
-    static async handleGetProducts(cartNew){
-        const idInventorys = cartNew.products.map(product =>{
-            return new mongoose.Types.ObjectId(product.inventoryId)
-        })
-        const products = await Products.aggregate([
-            {
-                $match: {idInventory:  { $in : idInventorys }}
-            },
-            {
-               $lookup: {
-                  from: "inventories",
-                  localField: "idInventory",    
-                  foreignField: "_id",
-                  as: "inventory"
-               }
-            },
-            {
-               $replaceRoot: { newRoot: { $mergeObjects: [ "$$ROOT",{ $arrayElemAt: [ "$inventory", 0 ] } ] } }
-            },
-            { 
-                $project: {   
-                    inventory: 0,
-                    reservations: 0
-                } 
-            }
-        ])
-        return products
-    }
-    // at createCartDB
-    static handleMapQuatity(cartNew,products){
-        const mapQuatity = new Map();
-        cartNew?.products?.forEach((product) => {
-            mapQuatity.set(product.inventoryId,product.quatity)
-        })
-        products.forEach((product)=>{
-            product.quatity = mapQuatity.get(product.idInventory.toString())
-        })
-    }
     // at updateMinus
     static async handleCheckCartMinus(cartId,inventoryId){
         const checkCart = await Carts.findOne({
@@ -57,9 +18,8 @@ class CartService {
         })
         return checkCart
     }
-
     async createCartDB(data){
-        let {userId,cartId,inventoryId} = data
+        let { userId,cartId,inventoryId } = data
         let quatity = 1;
         try{
             const stock = await Inventories.updateOne({
@@ -77,7 +37,7 @@ class CartService {
             if(stock.modifiedCount){
                 let cartFound,cartNew;
                 cartFound = await Carts.findOne({
-                    _id: cartId
+                    $and: [{_id: cartId},{status: "active"}]
                 })
                 console.log(cartFound)
                 if(cartFound){
@@ -91,7 +51,6 @@ class CartService {
                                 "products.$.quatity": quatity
                             }
                         },{
-                            upsert: true,
                             new: true
                         })
                     }else{
@@ -105,7 +64,6 @@ class CartService {
                                 }
                             }
                         },{
-                            upsert: true,
                             new: true
                         })
                     }
@@ -119,11 +77,9 @@ class CartService {
                         ]
                     })
                 }
-                // aggregate product added Cart
                 console.log(cartNew)
-                const products = await CartService.handleGetProducts(cartNew);
                 // change quatity in inventory to quatity of customer
-                CartService.handleMapQuatity(cartNew,products);
+                const products = await handleGetProducts(cartNew);
                 return {
                     statusCode: 200,
                     cart: cartNew,
@@ -170,9 +126,8 @@ class CartService {
                     },{
                         new: true
                     })
-                    const products = await CartService.handleGetProducts(cartNew);
                     // change quatity in inventory to quatity of customer
-                    CartService.handleMapQuatity(cartNew,products);
+                    const products = await handleGetProducts(cartNew);
                     return {
                         statusCode: 200,
                         cart: cartNew,
@@ -221,9 +176,8 @@ class CartService {
                     },{
                         new: true
                     })
-                    const products = await CartService.handleGetProducts(cartNew);
                     // change quatity in inventory to quatity of customer
-                    CartService.handleMapQuatity(cartNew,products);
+                    const products = await handleGetProducts(cartNew);
                     return {
                         statusCode: 200,
                         cart: cartNew,
@@ -287,9 +241,8 @@ class CartService {
                             }
                         }
                     })
-                    const products = await CartService.handleGetProducts(cartNew);
                     // change quatity in inventory to quatity of customer
-                    CartService.handleMapQuatity(cartNew,products);
+                    const products = await handleGetProducts(cartNew);
                     if(stock.modifiedCount){
                         return {
                             statusCode: 200,

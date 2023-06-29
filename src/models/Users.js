@@ -14,9 +14,9 @@ const User = new mongoose.Schema({
         addmin: Number,
     },
     refreshToken: { type: String },
-    orderHistorys: [{
+    orders: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'OrderHistorys'
+        ref: 'Orders'
     }]
 });
 

@@ -23,7 +23,6 @@ class OrderController {
             data = req.body.data.object;
             eventType = req.body.type;
         }
-
         // Handle the event
         if(eventType === 'checkout.session.completed'){
             console.log(eventType)
@@ -35,15 +34,14 @@ class OrderController {
                 const cardSaved = await orderService.clearProduct(customer?.metadata?.cartId)
                 if(cardSaved.modifiedCount){
                     console.log(orderSaved,cardSaved)
-                    // Return a 200 res to acknowledge receipt of the event
-                    return res.status(200).end();
                 }
-                return res.status(400).send(`bad required`);
             }catch(error){
                 console.log(error)
-                return res.status(500).send(`Server Error: ${error.message}`);
+                return res.status(500).send(`Server Error: ${error.message}`).end();
             }   
         }
+        // Return a 200 res to acknowledge receipt of the event
+        return res.status(200).end();
     }
     async getOrder(req,res){
         const { customerID } = req.params
@@ -57,6 +55,29 @@ class OrderController {
         if(resultApi.statusCode === 200){
             return res.status(200).json({
                ...resultApi
+            })
+        }else if(resultApi.statusCode === 500){
+            return res.status(500).json({
+                ...resultApi
+            })
+        }
+    }
+    async addOrderCOD(req,res){
+        const { email } = req.body
+        if(!email){
+            return res.status(400).json({
+                statusCode: 400,
+                errorMessage: 'bad required'
+            })
+        }
+        const resultApi = await orderService.createOrderDBCOD(req.body);
+        if(resultApi.statusCode === 200){
+            return res.status(200).json({
+               ...resultApi
+            })
+        }else if(resultApi.statusCode === 400){
+            return res.status(400).json({
+                ...resultApi
             })
         }else if(resultApi.statusCode === 500){
             return res.status(500).json({

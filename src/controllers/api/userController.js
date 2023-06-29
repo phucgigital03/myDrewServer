@@ -3,21 +3,24 @@ const userService = require("../../services/api/userService");
 class UserController {
     // [get] /users
     async home(req,res,next){
-        const {type , idUser} = req.query
-        if(!type || !idUser){
+        const {type , userId} = req.query
+        if(!type || !userId){
             return res.status(400).json({
                 statusCode: 400,
                 errorMessage: 'bad request'
             })
         }
-        const result = await userService.getUser(type,idUser);
+        const result = await userService.getUser(type,userId);
         if(result.statusCode === 500){
             return res.status(500).json({
                 ...result
             })
-        }
-        if(result.statusCode === 200){
+        }else if(result.statusCode === 200){
             return res.status(200).json({
+                ...result
+            })
+        }else if(result.statusCode === 400){
+            return res.status(400).json({
                 ...result
             })
         }

@@ -1,8 +1,8 @@
 const stripe = require('stripe')(process.env.SECRET_KEY_STRIPE);
-const mongoose = require('mongoose');
 const stripeService = require('../services/stripeService');
 
 const URL = process.env.URL
+const URL_UI = process.env.URL_UI
 class stripeController {
     async getUrl(req,res){
         const { 
@@ -50,7 +50,10 @@ class stripeController {
                     )
                 })
                 const productIds = products.map((product)=>{
-                    return product._id;
+                    return {
+                        inventoryId: product.inventoryId,
+                        quatity: product.quatity
+                    }
                 })
                 const customer = await stripe.customers.create({
                     metadata: {
@@ -74,13 +77,17 @@ class stripeController {
                     payment_method_types: ["card"],
                     line_items: line_items,
                     customer: customer.id,
-                    success_url: `http://localhost:3000/payment/success/${customer.id}`,
-                    cancel_url: 'http://localhost:3000/payment/cancel',
+                    success_url: `${URL_UI}/payment/success/${customer.id}`,
+                    cancel_url: `${URL_UI}/payment/cancel`,
                 });
                 return res.status(200).json({
                     statusCode: 200,
                     url: session.url
                 })
+            }else if(data.statusCode === 400){
+                return res.status(400).json({
+                    ...data
+                }) 
             }else if(data.statusCode === 500){
                 return res.status(500).json({
                     ...data

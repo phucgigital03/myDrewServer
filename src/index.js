@@ -11,8 +11,7 @@ const path = require('path');
 const corsOptions = require('./configs/corsOption');
 const routes = require('./routes/index.js');
 const connectMongoDb = require('./configs/connectMongoDB');
-const credentials = require('./middlewares/credentials')
-
+const credentials = require('./middlewares/credentials');
 
 // static file
 app.use(express.static(path.join('./src','public')));

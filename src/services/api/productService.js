@@ -9,7 +9,7 @@ class ProductService {
                 {
                    $lookup: {
                       from: "inventories",
-                      localField: "idInventory",    
+                      localField: "inventoryId",    
                       foreignField: "_id",
                       as: "fromInventories"
                    }
@@ -74,12 +74,12 @@ class ProductService {
             const ids = results.map(objId => objId._id)
             const products = await Products.aggregate([
                 {
-                    $match: { idInventory: {$in: ids} }
+                    $match: { inventoryId: {$in: ids} }
                 },
                 {
                    $lookup: {
                       from: "inventories",
-                      localField: "idInventory",    
+                      localField: "inventoryId",    
                       foreignField: "_id",
                       as: "inventory"
                    }

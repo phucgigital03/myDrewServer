@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const mongoose_delete = require('mongoose-delete');
 
 const Product = new mongoose.Schema({ 
-    idInventory: {type: mongoose.Schema.Types.ObjectId, required: true},
+    inventoryId: {type: mongoose.Schema.Types.ObjectId, required: true},
     spec: [{type: Object}],
     comments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Comments'}],
     productRef: [{type: mongoose.Schema.Types.ObjectId,ref: 'Products'}],
