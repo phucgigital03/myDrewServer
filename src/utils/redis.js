@@ -1,115 +1,74 @@
-const { client,clientSubscribe } = require('../configs/connectRedis')
+const { client } = require('../configs/connectRedis')
 
 class FeatureRedis{
-    async disConnectRedis(){
-        try{
-            await client.disconnect();
-            return {
-                statusCode: 200,
-                message: 'disconnect success'
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'disconnect error'
-            }
+    async quitRedis(){
+        await client.quit();
+        console.log('Redis connection closed');
+        return {
+            statusCode: 200,
+            message: 'disconnect success'
         }
+    }
+    async existsRedis(key){
+        const result = await client.exists(key)
+        return result
+    }
+    async expireRedis(key,time){
+        const result = await client.expire(key,time)
+        return result
     }
     async setRedis(key,value){
-        try{
-            const result = await client.set(key,value);
-            return {
-                statusCode: 200,
-                data: result
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
+        const result = await client.set(key,value);
+        return result
     }
     async getRedis(key){
-        try{
-            const result = await client.get(key);
-            return {
-                statusCode: 200,
-                data: result
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
+        const result = await client.get(key);
+        return result
     }
     async incrBy(key,value){
-        try{
-            const result = await client.incrBy(key,value);
-            return {
-                statusCode: 200,
-                data: result
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
+        const result = await client.incrby(key,value);
+        return result
+    }
+    async decrBy(key,value){
+        const result = await client.decrby(key,value);
+        return result
     }
     async delRedis(key){
-        try{
-            const result = await client.del(key);
-            return {
-                statusCode: 200,
-                data: result
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
+        const result = await client.del(key);
+        return result
     }
     async setNxRedis(key,value){
-        try{
-            const result = await client.setnx(key,value);
-            return {
-                statusCode: 200,
-                data: result
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
+        const result = await client.setnx(key,value);
+        return result
     }
-    async setNxExRedis(key,value,expired){
-        try{
-            const result = await client.setnx(key,value);
-            await client.expire(key,expired)
-            return {
-                statusCode: 200,
-                data: result
-            }
-        }catch(err){
-            console.log(err)
-            return {
-                statusCode: 500,
-                errorMessage: 'error server'
-            }
-        }
+    async hsetNxRedis(key,field,value){
+        const result = await client.hsetnx(key,field,value);
+        return result
+    }
+    async hIncrByRedis(key,field,value){
+        const result = await client.hincrby(key,field,value);
+        return result
+    }
+    async hDecrByRedis(key,field,value){
+        value = -Number(value)
+        const result = await client.hincrby(key,field,value);
+        return result
+    }
+    async hdelRedis(key,field){
+        const result = await client.hdel(key,field);
+        return result
+    }
+    async hgetRedis(key,field){
+        const result = await client.hget(key,field);
+        return result
+    }
+    async hgetallRedis(key){
+        const result = await client.hgetall(key);
+        return result
     }
     psubscribeNotifyRedis(){
-        clientSubscribe.psubscribe('__keyevent@0__:expired',()=>{
-            clientSubscribe.on('pmessage',(pattern,channel,message)=>{
+        client.psubscribe('__keyevent@0__:expired',()=>{
+            client.on('pmessage',(pattern,channel,message)=>{
                 console.log(message)
             })
         });

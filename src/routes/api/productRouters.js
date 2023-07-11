@@ -9,7 +9,5 @@ const { uploadArrayFile } = require('../../middlewares/uploadFile')
 
 productRouters.get('/product',productController.getList)
 productRouters.get('/product/:title',productController.getOne)
-productRouters.patch('/product/:id',productController.update)
-productRouters.delete('/product',productController.deleteSort)
 
 module.exports = productRouters

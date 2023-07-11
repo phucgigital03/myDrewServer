@@ -1,12 +1,25 @@
 const cartService = require("../../services/api/cartService");
 
 class CartController {
+    async getCart(req,res,next){
+        const { cartId } = req.params
+        if(!cartId){
+            return res.status(400).json({
+                statusCode: 400,
+                errorMessage: 'bad required'
+            })
+        }
+        return res.status(200).json({
+            statusCode: 200,
+            data: cartId
+        })
+    }
     async create(req,res,next){
         const {userId,cartId,inventoryId} = req.body
         if(!inventoryId){
             return res.status(400).json({
                 statusCode: 400,
-                message: 'bad required'
+                errorMessage: 'bad required'
             })
         }
         const result = await cartService.createCartDB(req.body);
@@ -29,7 +42,7 @@ class CartController {
         if(!inventoryId){
             return res.status(400).json({
                 statusCode: 400,
-                message: 'bad required'
+                errorMessage: 'bad required'
             })
         }
         const result = await cartService.updatePlus(req.body);
@@ -52,7 +65,7 @@ class CartController {
         if(!inventoryId){
             return res.status(400).json({
                 statusCode: 400,
-                message: 'bad required'
+                errorMessage: 'bad required'
             })
         }
         const result = await cartService.updateMinus(req.body);
@@ -75,7 +88,7 @@ class CartController {
         if(!inventoryId || !quatity){
             return res.status(400).json({
                 statusCode: 400,
-                message: 'bad required'
+                errorMessage: 'bad required'
             })
         }
         const result = await cartService.deleProductCartDB(req.body);

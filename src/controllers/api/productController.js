@@ -2,7 +2,7 @@ const productService = require("../../services/api/productService")
 
 class ProductController {
     async getList(req,res,next){
-        const result = await productService.getDB();
+        const result = await productService.getDB(req.query);
         if(result.statusCode === 200){
             return  res.status(200).json({
                 ...result
@@ -35,12 +35,6 @@ class ProductController {
                 ...result
             })
         }
-    }
-    update(req,res,next){
-
-    }
-    deleteSort(req,res,next){
-
     }
 }
 

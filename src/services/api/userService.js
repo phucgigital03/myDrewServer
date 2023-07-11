@@ -1,27 +1,18 @@
 const Users = require('../../models/Users')
+const Orders = require('../../models/Orders')
 
 class UserService {
     async getUser(type,userId){
         try{
-            let order;
+            let orders,user;
             if(type === 'order'){
-                order = await Users.find({_id: userId})
-                .populate([{ path: 'orders'}])
-                .select({
-                    email: 1,
-                    orders: 1,
-                    _id: 0,
-                })
-            }
-            if(!order){
-                return {
-                    statusCode: 400,
-                    errorMessage: 'bad required'
-                }
+                user = await Users.findOne({_id: userId})
+                orders = await Orders.find({userId: userId})
             }
             return {
                 statusCode: 200,
-                data: order
+                orders: orders,
+                email: user?.email
             }
         }catch(err){
             console.log(err)

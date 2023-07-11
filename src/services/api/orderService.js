@@ -218,7 +218,8 @@ class OrderService {
         }
     }
     async captureOrderPaypal(data){
-        const { orderId,formData,userId } = data;
+        const { orderId,formData } = data;
+        const userId = formData.userId;
         const payment = "paypal";
         const status = "paid";
         const customerId = `cus_${new mongoose.Types.ObjectId().toString()}`

@@ -29,6 +29,13 @@ class UserController {
             errorMessage: 'error server'
         })
     }  
+    testUsers(req,res){
+        console.log('test user apache',req.body)
+        return res.status(200).json({
+            statusCode: 200,
+            message: 'success'
+        })
+    }
 }
 
 module.exports = new UserController();

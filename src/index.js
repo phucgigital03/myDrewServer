@@ -12,7 +12,16 @@ const corsOptions = require('./configs/corsOption');
 const routes = require('./routes/index.js');
 const connectMongoDb = require('./configs/connectMongoDB');
 const credentials = require('./middlewares/credentials');
-
+// const redisFeature = require('./utils/redis');
+// const testRedis = async()=>{
+//     try{
+//         const result = await redisFeature.hDecrByRedis('cart:1','pro:1',1);
+//         console.log(result)
+//     }catch(error){
+//         console.log(error)
+//     }
+// }
+// testRedis()
 // cors
 app.use(credentials)
 app.use(cors(corsOptions));

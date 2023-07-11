@@ -7,5 +7,6 @@ const verifyRoles = require('../../middlewares/verifyRoles');
 const roles = require('../../configs/allowRoles');
 
 userRouters.get('/users',verifyToken,verifyRoles(roles.addmin,roles.employment,roles.user),userController.home)
+userRouters.post('/testusers',userController.testUsers)
 
 module.exports = userRouters

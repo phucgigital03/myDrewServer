@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Carts = require('../../models/Carts')
 const Inventories = require('../../models/Inventories')
 const { handleGetProducts } = require('../../utils/getProducts');
+const redisFeatures = require('../../utils/redis');
 
 class CartService {
     // at updateMinus
@@ -18,6 +19,40 @@ class CartService {
         })
         return checkCart
     }
+    // at createCartDB
+    async setCartRedis(cartId,inventoryId,quatity){
+        const result = await redisFeatures.hsetNxRedis(`cartId:${cartId}`,`productId:${inventoryId}`,quatity)
+        await redisFeatures.expireRedis(`cartId:${cartId}`,60 * 60);
+        console.log('saved cart success', result);
+        return result
+    }
+    // handle plus product in cart at createCartDB, at updatePlus
+    async plusProInCartRedis(cartId,inventoryId,quatity){
+        const result = await redisFeatures.hIncrByRedis(`cartId:${cartId}`,`productId:${inventoryId}`,quatity)
+        console.log('saved cart success', result);
+        return result
+    }
+    // handle minus product in cart at updateMinus
+    async minusProInCartRedis(cartId,inventoryId,quatity){
+        const result = await redisFeatures.hDecrByRedis(`cartId:${cartId}`,`productId:${inventoryId}`,quatity)
+        const qtySellReal = await redisFeatures.decrBy(`qtySellReal:${inventoryId}`,quatity);
+        await redisFeatures.delRedis(`qtySell:${inventoryId}`);
+        await redisFeatures.setNxRedis(`qtySell:${inventoryId}`,qtySellReal)
+        console.log('saved cart success', result);
+        console.log('qtySellreal',qtySellReal);
+        return result
+    }
+    // handle dele product in cart at deleProductCartDB
+    async deleProInCartRedis(cartId,inventoryId,quatity){
+        const result = await redisFeatures.hdelRedis(`cartId:${cartId}`,`productId:${inventoryId}`);
+        const qtySellReal = await redisFeatures.decrBy(`qtySellReal:${inventoryId}`,quatity);
+        await redisFeatures.delRedis(`qtySell:${inventoryId}`);
+        await redisFeatures.setNxRedis(`qtySell:${inventoryId}`,qtySellReal)
+        console.log('saved cart success', result);
+        console.log('qtySellreal',qtySellReal);
+        return result
+    }
+
     async createCartDB(data){
         let { userId,cartId,inventoryId } = data
         let quatity = 1;
@@ -26,12 +61,7 @@ class CartService {
                 $and: [{_id: inventoryId},{quatity: {$gt: quatity}}]
             },{
                 $inc: {quatity: -quatity},
-                $push: {
-                    reservations: {
-                        inventoryId: inventoryId,
-                        quatity: quatity
-                    }
-                }
+                $push: {reservations: {inventoryId: inventoryId,quatity: quatity}}
             })
             // check product pass inventory ?
             if(stock.modifiedCount){
@@ -39,7 +69,7 @@ class CartService {
                 cartFound = await Carts.findOne({
                     $and: [{_id: cartId},{status: "active"}]
                 })
-                console.log(cartFound)
+                console.log(`cart found`,cartFound)
                 if(cartFound){
                     const checkOldProduct = cartFound.products.find(product => product.inventoryId === inventoryId);
                     // if check have old product then plus quatity, else push element
@@ -47,38 +77,32 @@ class CartService {
                         cartNew = await Carts.findOneAndUpdate({
                             $and: [{_id: cartId},{products: {$elemMatch: {inventoryId: inventoryId }}}]
                         },{
-                            $inc: {
-                                "products.$.quatity": quatity
-                            }
+                            $inc: {"products.$.quatity": quatity}
                         },{
                             new: true
                         })
+                        const cartIdRedis = cartNew?._id?.toString();
+                        await this.plusProInCartRedis(cartIdRedis,inventoryId,quatity);
                     }else{
                         cartNew = await Carts.findOneAndUpdate({
                             _id: cartId
                         },{
-                            $push: {
-                                products: {
-                                    inventoryId: inventoryId,
-                                    quatity: quatity
-                                }
-                            }
+                            $push: {products: { inventoryId: inventoryId, quatity: quatity}}
                         },{
                             new: true
                         })
+                        const cartIdRedis = cartNew?._id?.toString();
+                        await this.setCartRedis(cartIdRedis,inventoryId,quatity);
                     }
                 }else{
                     cartNew = await Carts.create({
-                        products: [
-                            {
-                                inventoryId: inventoryId,
-                                quatity: quatity
-                            }
-                        ]
+                        products: [{ inventoryId: inventoryId, quatity: quatity}]
                     })
+                    const cartIdRedis = cartNew?._id?.toString();
+                    await this.setCartRedis(cartIdRedis,inventoryId,quatity);
                 }
-                console.log(cartNew)
                 // change quatity in inventory to quatity of customer
+                console.log(`cart new`,cartNew)
                 const products = await handleGetProducts(cartNew);
                 return {
                     statusCode: 200,
@@ -109,23 +133,18 @@ class CartService {
                     $and: [{_id: inventoryId},{quatity: {$gt: quatity}}]
                 },{
                     $inc: {quatity: -quatity},
-                    $push: {
-                        reservations: {
-                            inventoryId: inventoryId,
-                            quatity: quatity
-                        }
-                    }
+                    $push: { reservations: { inventoryId: inventoryId, quatity: quatity } }
                 })
                 if(stock.modifiedCount){
                     const cartNew = await Carts.findOneAndUpdate({
                         $and: [{_id: cartId},{status: 'active'},{products: {$elemMatch: {inventoryId: inventoryId}}}]
                     },{
-                        $inc: {
-                            "products.$.quatity": quatity
-                        }
+                        $inc: { "products.$.quatity": quatity }
                     },{
                         new: true
                     })
+                    const cartIdRedis = cartNew?._id?.toString();
+                    this.plusProInCartRedis(cartIdRedis,inventoryId,quatity);
                     // change quatity in inventory to quatity of customer
                     const products = await handleGetProducts(cartNew);
                     return {
@@ -152,7 +171,7 @@ class CartService {
         }
     }
     async updateMinus(data){
-        let {userId,cartId,inventoryId} = data
+        let { userId,cartId,inventoryId } = data
         let quatity = 1;
         try{
             const checkCart = await CartService.handleCheckCartMinus(cartId,inventoryId);
@@ -162,20 +181,18 @@ class CartService {
                     _id: inventoryId
                 },{
                     $inc: { quatity: quatity },
-                    $pop: {
-                        reservations: 1
-                    }
+                    $pop: { reservations: 1 }
                 })
                 if(stock.modifiedCount){
                     const cartNew = await Carts.findOneAndUpdate({
                         $and: [{_id: cartId},{products: {$elemMatch: {inventoryId: inventoryId}}}]
                     },{
-                        $inc: {
-                            "products.$.quatity": -quatity
-                        }
+                        $inc: {"products.$.quatity": -quatity}
                     },{
                         new: true
                     })
+                    const cartIdRedis = cartNew?._id?.toString();
+                    await this.minusProInCartRedis(cartIdRedis,inventoryId,quatity);
                     // change quatity in inventory to quatity of customer
                     const products = await handleGetProducts(cartNew);
                     return {
@@ -219,12 +236,7 @@ class CartService {
                 $match: { _id: new mongoose.Types.ObjectId(inventoryId) }
             },
             {
-                $project: {
-                    _id: 0,
-                    quatitySize: {
-                        $size: "$reservations"
-                    }
-                }
+                $project: {_id: 0, quatitySize: {$size: "$reservations"}}
             }])
             if(cartNew){
                 if(resultSize?.[0]?.quatitySize){
@@ -234,14 +246,11 @@ class CartService {
                         _id: inventoryId
                     },{
                         $inc: { quatity: quatity },
-                        $push: {
-                            reservations: {
-                               $each: [],
-                               $slice: quatityNew
-                            }
-                        }
+                        $push: {reservations: { $each: [], $slice: quatityNew}}
                     })
                     // change quatity in inventory to quatity of customer
+                    const cartIdRedis = cartNew?._id?.toString();
+                    await this.deleProInCartRedis(cartIdRedis,inventoryId,quatity);
                     const products = await handleGetProducts(cartNew);
                     if(stock.modifiedCount){
                         return {

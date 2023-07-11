@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const mongoose_delete = require('mongoose-delete');
 
 const Order = new mongoose.Schema({ 
-    userId: {type: mongoose.Schema.Types.ObjectId},
+    userId: {type: String},
     customerId: {type: String},
     shipping: {type: Object, required: true},
     phoneNumber: {type: String,required: true},

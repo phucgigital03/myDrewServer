@@ -50,13 +50,13 @@ class InventoryController {
         }
     }
     async deleteSort(req,res,next){
-        if(!req.query.title){
+        if(!req.params.id){
             return res.status(400).json({
                 statusCode: 400,
                 message: 'bad required: no content'
             })
         }
-        const result = await inventoryService.deleteSortInventory(req.query.title);
+        const result = await inventoryService.deleteSortInventory(req.params.id);
         if(result.statusCode === 200){
             return res.status(200).json({
                 ...result

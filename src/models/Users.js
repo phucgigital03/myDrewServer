@@ -14,10 +14,6 @@ const User = new mongoose.Schema({
         addmin: Number,
     },
     refreshToken: { type: String },
-    orders: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Orders'
-    }]
 });
 
 const Users = mongoose.model('Users', User);

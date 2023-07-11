@@ -2,6 +2,7 @@ const { unlink } = require('fs/promises')
 const path = require('path')
 const Inventories = require('../../models/Inventories')
 const Products = require('../../models/Products')
+const redisFeatures = require('../../utils/redis');
 
 class InventoryService {
     async createInventory(files,formInventory){
@@ -19,8 +20,10 @@ class InventoryService {
                 listImg,
             }
             const inventorySave = new Inventories(newForm)
-            await Products.create({titleInventory: inventorySave._title})
+            const inventoryId = inventorySave._id;
+            await Products.create({inventoryId: inventoryId})
             await inventorySave.save();
+            await redisFeatures.setNxRedis(`inventory:${inventoryId.toString()}`,inventorySave.quatity)
             return {
                 statusCode: 200,
                 data: inventorySave
@@ -83,7 +86,7 @@ class InventoryService {
             }
         }
     }
-    async updateInventory(title,files = [],formInventory){
+    async updateInventory(id,files = [],formInventory){
         try{
             const { price,size,color,title,description,category,quatity } = formInventory
             const newForm = {
@@ -101,10 +104,10 @@ class InventoryService {
                 newForm.listImg = listImg
             }
             // update and find 
-            const inventoryOld = await Inventories.findOneAndUpdate({_title: title},{
+            const inventoryOld = await Inventories.findOneAndUpdate({_id: id},{
                 $set: newForm
             })
-            const inventoryNew = await Inventories.find({_title: title})
+            const inventoryNew = await Inventories.find({_id: id})
             // check let delete listImg server
             if(files.length){
                 const listImgOld = inventoryOld.listImg;
@@ -141,9 +144,9 @@ class InventoryService {
             }
         }
     }
-    async deleteSortInventory(title){
+    async deleteSortInventory(id){
         try{
-            const inventoryeDeleted = await Inventories.delete({title: title}).exec()
+            const inventoryeDeleted = await Inventories.delete({_id: id}).exec()
             if(inventoryeDeleted.modifiedCount){
                 return {
                     statusCode: 200,
@@ -152,7 +155,7 @@ class InventoryService {
             }
             return {
                 statusCode: 400,
-                errorMessage: 'bad required: title invaltitle'
+                errorMessage: 'bad required: id invali'
             }
         }catch(err){
             console.log(err)

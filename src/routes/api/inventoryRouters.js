@@ -10,6 +10,6 @@ const { uploadArrayFile } = require('../../middlewares/uploadFile')
 inventoryRouters.post('/inventory',uploadArrayFile,inventoryController.create)
 inventoryRouters.get('/inventory',inventoryController.getList)
 inventoryRouters.patch('/inventory/:id',uploadArrayFile,inventoryController.update)
-inventoryRouters.delete('/inventory',inventoryController.deleteSort)
+inventoryRouters.delete('/inventory/:id',inventoryController.deleteSort)
 
 module.exports = inventoryRouters
