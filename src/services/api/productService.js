@@ -5,13 +5,18 @@ const aqp = require('api-query-params');
 
 class ProductService {
     async getDB(query){
+        let limitCount = 100;
         let sortData = {
             title: 1,
         };
         const { filter,sort } = aqp(query);
-        const { price,category } = filter
+        const { price,category,type } = filter
         if(category === 'newArrivals'){
             delete filter.category;
+            if(type === 'productRefs'){
+                limitCount = 4;
+                delete filter.type
+            }
         }
         if(price){
             const priceResult = price.split('-');
@@ -41,6 +46,7 @@ class ProductService {
                 {$replaceRoot: { newRoot: {$mergeObjects: [ "$$ROOT", { $arrayElemAt: [ "$fromInventories", 0 ] }]} }},
                 {$project: { fromInventories: 0,reservations: 0 }},
                 {$sort: sortData},
+                {$limit: limitCount},
                  // if merge title like same, get data of title first, else get data of that title
                 {$group: {_id: '$title',data: {'$first': '$$ROOT'} }},
                 {$project: {data: 1,_id: 0}},

@@ -27,7 +27,6 @@ class FeatureRabbitMQ {
             // process.exit(0)
         }, 15000);
     }
-
     // receive
     async receiveMessage(){
         // 1.connect
@@ -53,11 +52,10 @@ class FeatureRabbitMQ {
             noAck: false,
         })
     }
-
     //send Topic
     async pubTopicMessage({ key,msg }){
         // 1.connect
-        const conn = await amqplib.connect(process.env.URL_RABBITMQ_ICLOUD);
+        const conn = await amqplib.connect(process.env.URL_RABBITMQ_ICLOUD,{heartbeat: 60});
         // 2.create channel
         const channel = await conn.createChannel();
         // 3.create Exchange
@@ -66,44 +64,11 @@ class FeatureRabbitMQ {
             durable: true,
         });
         channel.publish(exchange, key, Buffer.from(msg));
-        console.log(" [x] Sent %s:'%s'", key, msg);
+        console.log("[x] Sent %s:'%s'", key, msg);
         setTimeout(()=>{
             conn.close();
         },15000)
     }   
-
-    // recevie Topic
-    async subTopicMessage({listKey}){
-        // 1.connect
-        const conn = await amqplib.connect(process.env.URL_RABBITMQ_ICLOUD);
-        // 2.create channel
-        const channel = await conn.createChannel();
-        // 3.create Exchange
-        const exchange = 'topic_inventory';
-        channel.assertExchange(exchange, 'topic', {
-            durable: true,
-        });
-        // 4.bind Queue
-        const { queue } = await channel.assertQueue('',{
-            exclusive: true,
-        })
-        listKey.forEach(async (key)=> {
-            await channel.bindQueue(queue,exchange,key);
-        })
-        // 5. many message
-        await channel.prefetch(1);
-    
-        await channel.consume(queue,(message)=>{
-            console.log(" [x] %s:'%s'", message.fields.routingKey, message.content.toString());
-            setTimeout(function() {
-                console.log("[x]Done");
-                channel.ack(message);
-            },8000);
-        },{
-            noAck: false,
-        })
-    }
-
     // send fanout
     async pubFanoutMessage({ msg }){
         // 1.connect
@@ -122,7 +87,6 @@ class FeatureRabbitMQ {
             conn.close();
         }, 2000);
     }
-
     // recevie fanout
     async subFanoutMessage(){
         // 1.connect

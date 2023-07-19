@@ -2,34 +2,56 @@ const registerService = require('../services/registerService');
 const registerValidation = require('../validations/registerValidation')
 
 class registerController {
-    // [post] /
     async register(req,res,next){
         try{
             const formUser = req.body;
             const formValidated = await registerValidation.handleRegisterForm(formUser);
-            const infoUser = await registerService.registerUser(formValidated);
-            if(infoUser.statusCode === 409){
+            const result = await registerService.registerUser(formValidated);
+            if(result.statusCode === 409){
                 return res.status(409).json({
-                    statusCode: 409,
-                    errorMessage: 'user ton tai'
+                    ...result
                 })
-            }else if(infoUser){
+            }else if(result.statusCode === 200){
                 return res.status(200).json({
-                    statusCode: 200,
-                    data: infoUser
+                    ...result
+                })
+            }else if(result.statusCode === 500){
+                return res.status(500).json({
+                    ...result
                 })
             }
+        }catch(error){
+            console.log(error);
             return res.status(500).json({
                 statusCode: 500,
                 errorMessage: 'error server'
             })
-        }catch(error){
-            if(error.details){
-                return res.status(400).json({
-                    statusCode: 400,
-                    errorMessage: error.details
+        }
+    }
+    async verifyOtp(req,res,next){
+        try{
+            const formUser = req.body;
+            const formValidated = await registerValidation.handleVerifyOtpForm(formUser);
+            const result = await registerService.verifyOtpAddUser(formValidated);
+            if(result.statusCode === 200){
+                return res.status(200).json({
+                    ...result
+                })
+            }else if(result.statusCode === 401){
+                return res.status(401).json({
+                    ...result
+                })
+            }else if(result.statusCode === 409){
+                return res.status(409).json({
+                    ...result
+                })
+            }else if(result.statusCode === 500){
+                return res.status(500).json({
+                    ...result
                 })
             }
+        }catch(error){
+            console.log(error);
             return res.status(500).json({
                 statusCode: 500,
                 errorMessage: 'error server'

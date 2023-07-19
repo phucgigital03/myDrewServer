@@ -12,16 +12,31 @@ const corsOptions = require('./configs/corsOption');
 const routes = require('./routes/index.js');
 const connectMongoDb = require('./configs/connectMongoDB');
 const credentials = require('./middlewares/credentials');
+const psubscribeNotifyRedis = require('./utils/redisSubscribe');
+const subTopicMessageRabbit = require('./utils/rabbitMQSubscribe');
+
+// listen expire event
+psubscribeNotifyRedis();
+
+const notifyRabbit = async ()=>{
+    try{
+        await subTopicMessageRabbit({listKey: ['reset.cart.inventory']});
+    }catch(error){
+        console.log(error)
+    }
+}
+notifyRabbit();
+
 // const redisFeature = require('./utils/redis');
 // const testRedis = async()=>{
 //     try{
-//         const result = await redisFeature.hDecrByRedis('cart:1','pro:1',1);
-//         console.log(result)
+//         await redisFeature.setRedis('phuc',1);
 //     }catch(error){
 //         console.log(error)
 //     }
 // }
 // testRedis()
+
 // cors
 app.use(credentials)
 app.use(cors(corsOptions));

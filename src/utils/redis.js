@@ -1,6 +1,6 @@
 const { client } = require('../configs/connectRedis')
 
-class FeatureRedis{
+class RedisFeatures{
     async quitRedis(){
         await client.quit();
         console.log('Redis connection closed');
@@ -15,6 +15,10 @@ class FeatureRedis{
     }
     async expireRedis(key,time){
         const result = await client.expire(key,time)
+        return result
+    }
+    async ttlRedis(key){
+        const result = await client.ttl(key);
         return result
     }
     async setRedis(key,value){
@@ -66,13 +70,6 @@ class FeatureRedis{
         const result = await client.hgetall(key);
         return result
     }
-    psubscribeNotifyRedis(){
-        client.psubscribe('__keyevent@0__:expired',()=>{
-            client.on('pmessage',(pattern,channel,message)=>{
-                console.log(message)
-            })
-        });
-    }
 }
 
-module.exports = new FeatureRedis();
+module.exports = new RedisFeatures();

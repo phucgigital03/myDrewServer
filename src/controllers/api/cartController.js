@@ -9,10 +9,24 @@ class CartController {
                 errorMessage: 'bad required'
             })
         }
-        return res.status(200).json({
-            statusCode: 200,
-            data: cartId
-        })
+        const result = await cartService.getCartDB(cartId);
+        if(result.statusCode === 200){
+            return res.status(200).json({
+                ...result
+            })
+        }else if(result.statusCode === 400){
+            return res.status(400).json({
+                ...result
+            })
+        }else if(result.statusCode === 204){
+            return res.status(204).json({
+                ...result
+            })
+        }else if(result.statusCode === 500){
+            return res.status(500).json({
+                ...result
+            })
+        }
     }
     async create(req,res,next){
         const {userId,cartId,inventoryId} = req.body
@@ -84,8 +98,8 @@ class CartController {
         }
     }
     async deleProductCart(req,res,next){
-        const {userId,cartId,inventoryId,quatity} = req.body
-        if(!inventoryId || !quatity){
+        const { userId,cartId,inventoryId } = req.body
+        if(!inventoryId || !cartId){
             return res.status(400).json({
                 statusCode: 400,
                 errorMessage: 'bad required'

@@ -1,5 +1,4 @@
 const redisFeatures = require('../utils/redis');
-const Carts = require('../models/Carts');
 
 const multipleBuyIncr = async (req,res,next)=>{
     const { inventoryId,cartId } = req.body;
@@ -7,9 +6,9 @@ const multipleBuyIncr = async (req,res,next)=>{
     const pathPlus = pathNames[0];
     // handle check cart
     if(pathPlus){
-        const cartFound = await Carts.findOne({$and: [{_id: cartId},{status: 'active'}]})
-        if(!cartFound){
-            console.log('no have cart')
+        const checkCart = await redisFeatures.hgetallRedis(`cartId:${cartId}`)
+        if(!Object.getOwnPropertyNames(checkCart).length){
+            console.log('no have cart redis')
             return res.status(400).json({
                 statusCode: 400,
                 errorMessage: 'bad required: no cart'

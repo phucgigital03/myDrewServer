@@ -8,6 +8,7 @@ const loginRouters = require('./loginRouters');
 const logoutRouters = require('./logoutRouters');
 const registerRouters = require('./registerRouters');
 const stripeRouters = require('./stripeRouters');
+const timeServerRouters = require('./timeServerRouters');
 
 const routes = (app)=>{
     // v1/api/
@@ -23,6 +24,7 @@ const routes = (app)=>{
     app.use('/v1/',logoutRouters)
     app.use('/v1/',registerRouters)
     app.use('/v1/',stripeRouters)
+    app.use('/v1/',timeServerRouters)
 }
 
 module.exports = routes
