@@ -6,6 +6,7 @@ const Carts = require('../../models/Carts');
 const crypto = require('crypto');
 const querystring = require('qs');
 const moment = require('moment');
+const redisFeatures = require('../../utils/redis');
 const URL_UI = process.env.URL_UI
 const VNP_TMNCODE = process.env.VNP_TMNCODE
 const VNP_HASHSECRET = process.env.VNP_HASHSECRET
@@ -60,6 +61,16 @@ class OrderService {
         },0)
         return subtotal
     }
+    async clearProduct(cartId){
+        const cartUpdated = await Carts.updateOne({
+            _id: cartId
+        },{
+            $set: {
+                products: []
+            }
+        })
+        return cartUpdated
+    }
     async createOrderDB(userId,customerId,shipping,formData,payment,status,subtotal,priceShip,products,cartId){
         const newOrder = new Orders({
             userId: userId || null,
@@ -82,16 +93,19 @@ class OrderService {
             cartSaved
         }
     }
-    async clearProduct(cartId){
-        const cartUpdated = await Carts.updateOne({
-            _id: cartId
-        },{
-            $set: {
-                products: []
-            }
-        })
-        return cartUpdated
+    async setOrderRedis(orderId,cartId){
+        // const randomNumber = Math.floor(Math.random() * 2) + 1;
+        const result = await redisFeatures.setNxRedis(`orderId:${orderId}`,true);
+        if(result){
+            await redisFeatures.expireRedis(`orderId:${orderId}`,60 * 2);
+            await redisFeatures.delRedis(`cartId:${cartId}`)
+            // console.log('random number',randomNumber);
+            console.log('saved cart success', result);
+        }
+        return result
     }
+
+    // of router
     async getOrderDB(customerID){
         try{
             const orderFound = await Orders.findOne({customerId: customerID})
@@ -146,11 +160,15 @@ class OrderService {
                 const products = cartFound.products;
                 if(products?.length){
                     const subtotal = await OrderService.sumSubTotalProduct(cartFound);
+                    // in createOrderDB have clear products into Cart
                     const { cartSaved,orderSaved } = await this.createOrderDB(userId,customerId,shipping,formData,payment,status,subtotal,priceShip,products,cartId)
                     if(cartSaved.modifiedCount){
-                        return {
-                            statusCode: 200,
-                            url: `${URL_UI}/payment/success/${orderSaved.customerId}`
+                        const orderRedis = await this.setOrderRedis(orderSaved._id,cartId);
+                        if(orderRedis){
+                            return {
+                                statusCode: 200,
+                                url: `${URL_UI}/payment/success/${orderSaved.customerId}`
+                            }
                         }
                     }
                 }

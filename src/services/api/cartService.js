@@ -23,7 +23,7 @@ class CartService {
     async setCartRedis(cartId,inventoryId,quatity){
         // const randomNumber = Math.floor(Math.random() * 2) + 1;
         const result = await redisFeatures.hsetNxRedis(`cartId:${cartId}`,`productId:${inventoryId}`,quatity)
-        await redisFeatures.expireRedis(`cartId:${cartId}`,60);
+        await redisFeatures.expireRedis(`cartId:${cartId}`,60 * 2);
         // console.log('random number',randomNumber);
         console.log('saved cart success', result);
         return result

@@ -9,6 +9,7 @@ const logoutRouters = require('./logoutRouters');
 const registerRouters = require('./registerRouters');
 const stripeRouters = require('./stripeRouters');
 const timeServerRouters = require('./timeServerRouters');
+const searchRouters = require('./searchRouters');
 
 const routes = (app)=>{
     // v1/api/
@@ -17,6 +18,7 @@ const routes = (app)=>{
     app.use('/v1/api/',productRouters)
     app.use('/v1/api/',cartRouters)
     app.use('/v1/api/',orderRouters)
+    app.use('/v1/api/search',searchRouters)
 
     // v1/ (authentication,authorization)
     app.use('/v1/',refreshTokenRouters)

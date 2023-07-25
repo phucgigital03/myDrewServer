@@ -11,7 +11,7 @@ class ProductService {
         };
         const { filter,sort } = aqp(query);
         const { price,category,type } = filter
-        if(category === 'newArrivals'){
+        if(category === 'newArrivals' || category === 'shopAll'){
             delete filter.category;
             if(type === 'productRefs'){
                 limitCount = 4;
