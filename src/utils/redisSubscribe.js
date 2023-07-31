@@ -13,7 +13,7 @@ const psubscribeNotifyRedis = ()=>{
                     if(checkId){
                         console.log('cartId',checkId)
                         await featureRabbitMQ.pubTopicMessage({
-                            key: 'reset.cart.inventory',
+                            key: 'dev.reset.cart.inventory',
                             msg: checkId
                         })
                     }
@@ -21,7 +21,7 @@ const psubscribeNotifyRedis = ()=>{
                     if(checkId){
                         console.log('orderId', checkId)
                         await featureRabbitMQ.pubTopicMessage({
-                            key: 'reset.order.inventory',
+                            key: 'dev.reset.order.inventory',
                             msg: checkId
                         })
                     }

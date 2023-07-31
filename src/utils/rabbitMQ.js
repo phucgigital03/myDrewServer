@@ -59,7 +59,7 @@ class FeatureRabbitMQ {
         // 2.create channel
         const channel = await conn.createChannel();
         // 3.create Exchange
-        const exchange = 'topic_inventory';
+        const exchange = 'topic_inventory_dev';
         channel.assertExchange(exchange, 'topic', {
             durable: true,
         });

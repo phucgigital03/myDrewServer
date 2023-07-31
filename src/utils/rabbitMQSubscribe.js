@@ -44,7 +44,7 @@ const subTopicMessageRabbit = async({listKey})=>{
     // 2.create channel
     const channel = await conn.createChannel();
     // 3.create Exchange
-    const exchange = 'topic_inventory';
+    const exchange = 'topic_inventory_dev';
     channel.assertExchange(exchange, 'topic', {
         durable: true,
     });
@@ -63,7 +63,7 @@ const subTopicMessageRabbit = async({listKey})=>{
             const filed = message.fields.routingKey;
             const checkId =  message.content.toString()
             console.log("[x] Recevie %s:'%s'", filed, checkId);
-            const checkFiled = filed?.split('.')?.[1];
+            const checkFiled = filed?.split('.')?.[2];
             if(checkFiled === 'cart'){
                 // update old cart
                 const cartOld = await Carts.findOneAndUpdate({$and: [{_id: checkId},{status: 'active'}]},{$set: { products: [] }})

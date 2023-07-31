@@ -1,7 +1,9 @@
 const stripe = require('stripe')(process.env.SECRET_KEY_STRIPE);
 const orderService = require('../../services/api/orderService');
+const orderValidation = require('../../validations/orderValidation');
 
 class OrderController {
+    // stripe
     async webhookAddOrderStripe(req,res){
         const sig = req.headers['stripe-signature'];
         let endpointSecret;
@@ -42,6 +44,7 @@ class OrderController {
         // Return a 200 res to acknowledge receipt of the event
         return res.status(200).end();
     }
+    // get order
     async getOrder(req,res){
         const { customerID } = req.params
         if(!customerID){
@@ -61,6 +64,7 @@ class OrderController {
             })
         }
     }
+    // cod
     async addOrderCOD(req,res){
         const { email } = req.body
         if(!email){
@@ -84,26 +88,43 @@ class OrderController {
             })
         }
     }
+    // paypal
     async addOrderPaypal(req,res){
-        const { cartId } = req.body
-        if(!cartId){
-            return res.status(400).json({
-                statusCode: 400,
-                errorMessage: 'bad required'
+        try{
+            const { cartId } = req.body
+            console.log('cartId at orderController:',cartId);
+            if(!cartId){
+                return res.status(400).json({
+                    statusCode: 400,
+                    errorMessage: 'bad required'
+                })
+            }
+            const checkOrder = await orderValidation.formPaypal(req.body);
+            if(checkOrder){
+                const resultApi = await orderService.createOrderPaypal(cartId);
+                if(resultApi.statusCode === 200){
+                    return res.status(200).json({
+                    ...resultApi
+                    })
+                }else if(resultApi.statusCode === 400){
+                    return res.status(400).json({
+                        ...resultApi
+                    })
+                }else if(resultApi.statusCode === 500){
+                    return res.status(500).json({
+                        ...resultApi
+                    })
+                }
+            }
+            return res.status(409).json({
+                statusCode: 409,
+                errorMessage: 'bad required: conflict'
             })
-        }
-        const resultApi = await orderService.createOrderPaypal(cartId);
-        if(resultApi.statusCode === 200){
-            return res.status(200).json({
-               ...resultApi
-            })
-        }else if(resultApi.statusCode === 400){
-            return res.status(400).json({
-                ...resultApi
-            })
-        }else if(resultApi.statusCode === 500){
+        }catch(error){
+            console.log(error)
             return res.status(500).json({
-                ...resultApi
+                statusCode: 500,
+                errorMessage: 'error server'
             })
         }
     }
@@ -130,6 +151,7 @@ class OrderController {
             })
         }
     }
+    // vnpay
     async createUrlVnpay(req,res){
         const data = await orderService.createUrlVnPay(req)
         if(data.statusCode === 200){

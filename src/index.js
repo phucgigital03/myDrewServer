@@ -20,7 +20,7 @@ psubscribeNotifyRedis();
 
 const notifyRabbit = async ()=>{
     try{
-        await subTopicMessageRabbit({listKey: ['reset.cart.inventory','reset.order.inventory']});
+        await subTopicMessageRabbit({listKey: ['dev.reset.cart.inventory','dev.reset.order.inventory']});
     }catch(error){
         console.log(error)
     }

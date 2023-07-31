@@ -12,10 +12,9 @@ const VNP_TMNCODE = process.env.VNP_TMNCODE
 const VNP_HASHSECRET = process.env.VNP_HASHSECRET
 const VNP_URL = process.env.VNP_URL
 const URL = process.env.URL
-const { PUBLIC_KEY_PAYPAL, SECRET_KEY_PAYPAL } = process.env;
+const { PUBLIC_KEY_PAYPAL_PRODUCTION, SECRET_KEY_PAYPAL_PRODUCTION } = process.env;
 const baseURL = {
-    sandbox: "https://api-m.sandbox.paypal.com",
-    production: "https://api-m.paypal.com"
+    urlpaypal: process.env.URL_PRODUCTION,
 };
 class OrderService {
     sortObject(obj){
@@ -35,7 +34,7 @@ class OrderService {
     }
     static async generateAccessToken(){
         const { data: { access_token } } = await axios({
-          url: `${baseURL.sandbox}/v1/oauth2/token`,
+          url: `${baseURL.urlpaypal}/v1/oauth2/token`,
           method: 'post',
           headers: {
             Accept: 'application/json',
@@ -43,14 +42,14 @@ class OrderService {
             'content-type': 'application/x-www-form-urlencoded',
           },
           auth: {
-            username: PUBLIC_KEY_PAYPAL,
-            password: SECRET_KEY_PAYPAL,
+            username: PUBLIC_KEY_PAYPAL_PRODUCTION,
+            password: SECRET_KEY_PAYPAL_PRODUCTION,
           },
           params: {
             grant_type: 'client_credentials',
           },
         });
-        console.log(access_token)
+        console.log('access token paypal: ',access_token)
         return access_token
     }
     static async sumSubTotalProduct(cartFound){
@@ -121,6 +120,7 @@ class OrderService {
             }
         }
     }
+    // stripe
     async createOrderDBStripe(data,customer){
         const userId = customer?.metadata?.userId || null;
         const customerId = data.customer;
@@ -142,6 +142,7 @@ class OrderService {
             orderSaved
         }
     }
+    // COD
     async createOrderDBCOD(formData){
         const { userId,cartId } = formData
         const payment = "cod";
@@ -185,6 +186,7 @@ class OrderService {
             }
         }
     }
+    // paypal
     async createOrderPaypal(cartId){
         try{
             const cartFound = await Carts.findOne({_id: cartId});
@@ -195,14 +197,14 @@ class OrderService {
                     const total = subtotal + 35000;
                     const moneyConvert = Math.ceil(total/20000);
                     const accessToken = await OrderService.generateAccessToken();
-                    const url = `${baseURL.sandbox}/v2/checkout/orders`; 
+                    const url = `${baseURL.urlpaypal}/v2/checkout/orders`; 
                     const requestBody = {
                         intent: 'CAPTURE',
                         purchase_units: [
                             {
                                 amount: {
                                     currency_code: 'USD',
-                                    value: `${moneyConvert}.00`
+                                    value: `${2}.00`
                                 },
                                 custom_id: JSON.stringify({
                                     cartId: cartId,
@@ -251,7 +253,7 @@ class OrderService {
         console.log(formData)
         try{
             const accessToken = await OrderService.generateAccessToken();
-            const url = `${baseURL.sandbox}/v2/checkout/orders/${orderId}/capture`;
+            const url = `${baseURL.urlpaypal}/v2/checkout/orders/${orderId}/capture`;
             const headers = {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}` // Replace with your actual access token
@@ -277,6 +279,7 @@ class OrderService {
             }
         }
     }
+    // vnpay
     async createUrlVnPay(req){
         const {  cartId, userId, email, phoneNumber, fullName, noteaddress, province, district, commune, discount } = req.body;
         try{
