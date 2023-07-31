@@ -120,28 +120,6 @@ class OrderService {
             }
         }
     }
-    // stripe
-    async createOrderDBStripe(data,customer){
-        const userId = customer?.metadata?.userId || null;
-        const customerId = data.customer;
-        const formData = {
-            phoneNumber: customer?.metadata?.phoneNumber,
-            fullName: customer?.metadata?.fullName,
-            email: customer?.metadata?.email,
-        }
-        const payment = 'visa';
-        const status = 'paid';
-        const subtotal = data.amount_subtotal;
-        const priceShip = 35000;
-        const cartId = customer?.metadata?.cartId;
-        const shipping = JSON.parse(customer?.metadata?.shipping) || {};
-        const products = JSON.parse(customer?.metadata?.productIds) || [];
-        const { cartSaved,orderSaved } = this.createOrderDB(userId,customerId,shipping,formData,payment,status,subtotal,priceShip,products,cartId)
-        return {
-            cartSaved,
-            orderSaved
-        }
-    }
     // COD
     async createOrderDBCOD(formData){
         const { userId,cartId } = formData
@@ -258,7 +236,7 @@ class OrderService {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${accessToken}` // Replace with your actual access token
             };
-            const { data } = await axios.post(url,{},{ headers });
+            const { data } = await axios.post(url,{},{headers});
             const { subtotal,products,cartId } = JSON.parse(data.purchase_units?.[0]?.payments?.captures?.[0]?.custom_id) || {};
             const { cartSaved,orderSaved } = await this.createOrderDB(userId,customerId,shipping,formData,payment,status,subtotal,priceShip,products,cartId)
             if(cartSaved.modifiedCount){

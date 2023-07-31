@@ -6,8 +6,6 @@ const verifyToken = require('../../middlewares/verifyToken');
 const verifyRoles = require('../../middlewares/verifyRoles');
 const roles = require('../../configs/allowRoles');
 
-// stripe
-orderRouters.post('/stripe/orders',express.raw({type: 'application/json'}),orderController.webhookAddOrderStripe)
 // cod
 orderRouters.post('/cod/orders',orderController.addOrderCOD)
 // paypal
